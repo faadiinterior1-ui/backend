@@ -26,7 +26,7 @@ export const sendEmail = async ({ to, subject, html }) => {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Céleste Clocks <orders@faadiinterior.com>',
+      from: 'Fadii Interior <orders@faadiinterior.com>',
       to,
       subject,
       html,
