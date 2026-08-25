@@ -42,8 +42,8 @@ router.post('/create-payment', async (req, res) => {
       return res.status(400).json({ error: 'Valid totalAmount or orderId is required' });
     }
 
-    // 50% advance amount in paisas (smallest unit for PKR)
-    const advanceAmount = Math.round(amount * 0.5 * 100);
+    // 50% advance amount in PKR (Half price of total)
+    const advanceAmount = Math.round(amount * 0.5);
 
     const client = getSafepayClient();
 
