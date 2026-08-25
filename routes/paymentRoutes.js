@@ -75,8 +75,20 @@ router.post('/create-payment', async (req, res) => {
 // Webhook — actual payment confirmation from Safepay
 router.post('/webhook/safepay', async (req, res) => {
   try {
+    const signature = req.headers['x-sfpy-signature'];
+    if (!signature || !req.body) {
+      console.warn('Safepay webhook missing signature header or body');
+      return res.status(400).send('Invalid signature');
+    }
+
     const client = getSafepayClient();
-    const isValid = client.verify.signature(req);
+    let isValid = false;
+    try {
+      isValid = client.verify.signature(req);
+    } catch (sigErr) {
+      console.warn('Safepay signature verification failed:', sigErr.message);
+      return res.status(400).send('Invalid signature');
+    }
 
     if (!isValid) {
       console.warn('Safepay webhook signature invalid');
