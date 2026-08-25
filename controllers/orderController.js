@@ -85,7 +85,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   // Calculate shipping & taxes server-side
-  const shippingPrice = itemsPrice >= 20000 ? 0 : 500; // Free shipping over Rs 20,000
+  // const shippingPrice = itemsPrice >= 20000 ? 0 : 500; // Free shipping over Rs 20,000 (commented out for now)
+  const shippingPrice = 0; // Delivery charges set to 0
   const taxPrice = Math.round(itemsPrice * 0.05); // 5% artisanal VAT/tax
   const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
