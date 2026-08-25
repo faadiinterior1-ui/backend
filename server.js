@@ -16,6 +16,7 @@ import contactRoutes from './routes/contactRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
@@ -57,15 +58,19 @@ app.use(
   })
 );
 
-// ── 4. Body Parsers & Cookie Parser ───────────────────────────
+// ── 4. Webhook Raw Body Middleware (Before JSON parser) ────────
+app.use('/api/webhook/safepay', express.raw({ type: 'application/json' }));
+app.use('/api/payment/webhook/safepay', express.raw({ type: 'application/json' }));
+
+// ── 5. Body Parsers & Cookie Parser ───────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// ── 5. Static Files (Uploads directory for local dev) ─────────
+// ── 6. Static Files (Uploads directory for local dev) ─────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ── 6. Rate Limiting ──────────────────────────────────────────
+// ── 7. Rate Limiting ──────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 30, // Limit each IP to 30 auth requests per window
@@ -88,10 +93,10 @@ const contactLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// ── 7. Database Connection ────────────────────────────────────
+// ── 8. Database Connection ────────────────────────────────────
 connectDB();
 
-// ── 8. Health Check ───────────────────────────────────────────
+// ── 9. Health Check ───────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -102,7 +107,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ── 9. Mount Application Routes ───────────────────────────────
+// ── 10. Mount Application Routes ──────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
@@ -110,12 +115,14 @@ app.use('/api/contact', contactLimiter, contactRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', paymentRoutes);
+app.use('/api/payment', paymentRoutes);
 
-// ── 10. 404 & Centralized Error Handlers ──────────────────────
+// ── 11. 404 & Centralized Error Handlers ──────────────────────
 app.use(notFound);
 app.use(errorHandler);
 
-// ── 11. Server Listen ─────────────────────────────────────────
+// ── 12. Server Listen ─────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`[Céleste Server] Running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
