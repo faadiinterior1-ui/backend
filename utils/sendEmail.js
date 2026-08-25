@@ -1,50 +1,6 @@
-import nodemailer from 'nodemailer';
+import { sendEmail } from './resendEmail.js';
 
-/**
- * Send a branded Fadii Interior email
- * @param {Object} options - { to, subject, html, text? }
- */
-export const sendEmail = async ({ to, subject, html, text }) => {
-  const smtpUser = process.env.SMTP_USER || 'faadiinterior1@gmail.com';
-  const smtpPass = process.env.SMTP_PASS || 'duirjbaqgucmeiny';
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT, 10) || 587,
-    secure: false, // TLS
-    auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-
-  // Plain-text fallback — required for spam filter compliance
-  const plainText = text || html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-
-  const mailOptions = {
-    from: `"Fadii Interior" <${smtpUser}>`,
-    replyTo: smtpUser,
-    to,
-    subject,
-    html,
-    text: plainText,
-    headers: {
-      'X-Mailer': 'Fadii Interior Mailer v1.0',
-      'X-Priority': '3',                  // Normal priority (not bulk)
-      'Precedence': 'transactional',      // Marks as transactional, not bulk
-      'List-Unsubscribe': `<mailto:${smtpUser}?subject=Unsubscribe>`, // CAN-SPAM requirement
-    },
-  };
-
-  await transporter.sendMail(mailOptions);
-};
+export { sendEmail };
 
 /**
  * Build a branded HTML email for password reset
